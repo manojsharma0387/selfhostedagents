@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: azure-pipelines-setup
+  namespace: azagents
+spec:
+  activeDeadlineSeconds: 300
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: Never
+      activeDeadlineSeconds: 240
+      containers:
+      - name: azure-pipelines-agent
+        # image is created like described in https://keda.sh/docs/2.9/scalers/azure-pipelines/#configuring-the-agent-container
+        # don't forget the mentioned script change as well as mine
+        image: {{DOCKER_IMAGE_NAME}}
+        imagePullPolicy: Always
+        env:
+        - name: AZP_AGENT_NAME
+          value: setup-template # needs to include "template"
+        envFrom:
+        - secretRef:
+            name: pipeline-auth
